@@ -21,6 +21,10 @@ API_KEY = os.getenv("API_KEY")
 
 app = FastAPI()
 
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
 
 @app.post("/honeypot")
 def honeypot(payload: dict, x_api_key: str = Header(None)):
