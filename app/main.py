@@ -219,7 +219,7 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
         # ================================
         # POINT 8 – FINAL API RESPONSE
         # ================================
-        engagement_complete = get_message_count(session_id) >= 6
+
 
         #old engagement_complete
         # engagement_complete = (
@@ -228,7 +228,7 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
         #         and any(extracted_intelligence.values())
         # )
 
-       #new engagement_complete for suspicious keyword fix
+        #new engagement_complete for suspicious keyword fix
         engagement_complete = (
         scam_detected is True
         and extracted_intelligence is not None

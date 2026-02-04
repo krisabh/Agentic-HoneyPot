@@ -24,6 +24,8 @@ SUSPICIOUS_KEYWORDS = {
     "lottery",
     "kyc",
     "payment",
+    "qr code",
+    "download"
 }
 
 
