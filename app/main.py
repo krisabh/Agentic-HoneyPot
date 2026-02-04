@@ -141,6 +141,7 @@ from app.agent import generate_agent_reply
 from app.extractor import extract_intelligence
 from app.guvi_callback import send_final_result_to_guvi
 from app.memory import is_session_finalized, mark_session_finalized
+from app.agent_notes import generate_agent_notes
 
 load_dotenv()
 
@@ -239,11 +240,12 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
        )
 
         if engagement_complete and not is_session_finalized(session_id):
+            agent_notes = generate_agent_notes(history)
             final_response = build_final_api_response(
                 scam_detected=True,
                 conversation_history=history,
                 extracted_intelligence=extracted_intelligence,
-                agent_notes="Scammer used urgency and payment redirection tactics"
+                agent_notes=agent_notes
             )
             # Mandatory GUVI callback
             send_final_result_to_guvi(
@@ -251,7 +253,7 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
                 scam_detected=True,
                 total_messages=final_response["engagementMetrics"]["totalMessagesExchanged"],
                 extracted_intelligence=extracted_intelligence,
-                agent_notes=final_response["agentNotes"]
+                agent_notes=agent_notes
             )
             # Mark session as finalized
             mark_session_finalized(session_id)
