@@ -24,6 +24,9 @@ def send_final_result_to_guvi(
             "upiIds": extracted_intelligence.get("upiIds", []),
             "phishingLinks": extracted_intelligence.get("phishingLinks", []),
             "phoneNumbers": extracted_intelligence.get("phoneNumbers", []),
+            "emailAddresses": extracted_intelligence.get("emailAddresses", []),
+            # "ifscCodes": extracted_intelligence.get("ifscCodes", []),
+            "panNumbers": extracted_intelligence.get("panNumbers", []),
             "suspiciousKeywords": extracted_intelligence.get("suspiciousKeywords", [])
         },
         "agentNotes": agent_notes

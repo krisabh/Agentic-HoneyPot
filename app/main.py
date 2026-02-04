@@ -130,7 +130,7 @@
 from fastapi import FastAPI, Header, HTTPException
 from dotenv import load_dotenv
 from app.final_response import build_final_api_response
-
+from app.agent_notes import generate_agent_notes
 import os
 from typing import Optional
 from fastapi import Body
@@ -218,7 +218,7 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
         # ================================
         # POINT 8 – FINAL API RESPONSE
         # ================================
-        engagement_complete = get_message_count(session_id) >= 6
+        # engagement_complete = get_message_count(session_id) >= 6
 
         #old engagement_complete
         # engagement_complete = (
@@ -239,11 +239,12 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
        )
 
         if engagement_complete and not is_session_finalized(session_id):
+            agent_notes = generate_agent_notes(history)
             final_response = build_final_api_response(
                 scam_detected=True,
                 conversation_history=history,
                 extracted_intelligence=extracted_intelligence,
-                agent_notes="Scammer used urgency and payment redirection tactics"
+                agent_notes=agent_notes
             )
             # Mandatory GUVI callback
             send_final_result_to_guvi(
@@ -251,7 +252,7 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
                 scam_detected=True,
                 total_messages=final_response["engagementMetrics"]["totalMessagesExchanged"],
                 extracted_intelligence=extracted_intelligence,
-                agent_notes=final_response["agentNotes"]
+                agent_notes=agent_notes
             )
             # Mark session as finalized
             mark_session_finalized(session_id)
