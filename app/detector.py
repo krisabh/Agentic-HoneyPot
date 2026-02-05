@@ -59,6 +59,7 @@ def detect_scam(text: str):
         }
 
     return {
-        "scamDetected": bundled["scamDetected"],
-        "reason": bundled["reason"],
+        "scamDetected": scam_detected,
+        "reason": reason,
     }
+    

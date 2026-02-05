@@ -9,16 +9,6 @@ def get_model():
     """
     Returns a configured Gemini GenerativeModel
     """
-    global _MODEL
-    if _MODEL is None:
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        _MODEL = genai.GenerativeModel("gemini-3-flash-preview")
-    return _MODEL
-
-def generate_content(prompt: str):
-    """
-    Generates content using the shared Gemini model.
-    """
-
-    model = get_model()
-    return model.generate_content(prompt)
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    return genai.GenerativeModel("gemini-3-flash-preview")
+    

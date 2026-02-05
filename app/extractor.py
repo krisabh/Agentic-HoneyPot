@@ -106,3 +106,4 @@ def extract_intelligence(messages):
         "panNumbers": sorted(set(pan_numbers)),
         "suspiciousKeywords": suspicious_keywords
      }
+     

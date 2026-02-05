@@ -298,3 +298,4 @@ def honeypot(
         #"extractedIntelligence": extracted_intelligence,
         "conversationHistory": history if scam_detected else []
     }
+    

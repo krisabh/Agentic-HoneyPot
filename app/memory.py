@@ -78,3 +78,4 @@ def is_session_finalized(session_id: str) -> bool:
 
 def mark_session_finalized(session_id: str):
     finalized_sessions.add(session_id)
+    
