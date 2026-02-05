@@ -1,5 +1,5 @@
-from app.gemini_client import get_model
-
+#from app.gemini_client import get_model
+from app.gemini_client import generate_content
 
 SUMMARY_PROMPT = """
 You summarize scammer behavior in a single concise sentence.
@@ -62,8 +62,9 @@ Return only the single-sentence summary.
 """
 
     try:
-        model = get_model()
-        response = model.generate_content(prompt)
+        #model = get_model()
+        #response = model.generate_content(prompt)
+        response = generate_content(prompt)
         summary = response.text.strip().replace("\n", " ")
         tactic_phrase = " and ".join(tactics)
         if not summary:

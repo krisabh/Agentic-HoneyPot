@@ -129,6 +129,8 @@
 
 from fastapi import FastAPI, Header, HTTPException
 from dotenv import load_dotenv
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException
+from app.scam_bundle import generate_scam_bundle
 from app.final_response import build_final_api_response
 from app.agent_notes import generate_agent_notes
 import os
@@ -163,7 +165,11 @@ def honeypot_get(x_api_key: str = Header(None)):
     }
 
 @app.post("/honeypot")
-def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)):
+def honeypot(
+    payload: Optional[dict] = Body(None),
+    x_api_key: str = Header(None),
+    background_tasks: BackgroundTasks = None
+):
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
 
@@ -195,21 +201,33 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
     add_message(session_id, "scammer", message)
 
     # 2 Detect scam
-    scam_detected = False
-    detection = detect_scam(message)
+
+    history = get_messages(session_id)
+    bundled = generate_scam_bundle(history)
+    detection = None
+    agent_reply = None
+    extracted_intelligence = {}
+    agent_notes = ""
+
+    if bundled is not None:
+        detection = {
+            "scamDetected": bundled["scamDetected"],
+            "reason": bundled["reason"],
+        }
+        agent_reply = bundled["agentReply"]
+        agent_notes = bundled["agentNotes"]
+    else:
+        detection = detect_scam(message)
     if detection["scamDetected"]:
         mark_scam_detected(session_id)
     scam_detected = detection["scamDetected"] or was_scam_detected(session_id)
 
-    history = []
-    agent_reply = None
-    extracted_intelligence = {}
+
 
     if scam_detected:
-        history = get_messages(session_id)
-
-        # 3 Generate agent reply
-        agent_reply = generate_agent_reply(history)
+        # 3 Generate agent reply (fallback if bundled result missing)
+        if not agent_reply:
+            agent_reply = generate_agent_reply(history)
         add_message(session_id, "agent", agent_reply)
 
         # 4 Extract intelligence
@@ -239,7 +257,8 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
        )
 
         if engagement_complete and not is_session_finalized(session_id):
-            agent_notes = generate_agent_notes(history)
+            if not agent_notes:
+                agent_notes = generate_agent_notes(history)
             final_response = build_final_api_response(
                 scam_detected=True,
                 conversation_history=history,
@@ -247,13 +266,23 @@ def honeypot(payload: Optional[dict] = Body(None), x_api_key: str = Header(None)
                 agent_notes=agent_notes
             )
             # Mandatory GUVI callback
-            send_final_result_to_guvi(
-                session_id=session_id,
-                scam_detected=True,
-                total_messages=final_response["engagementMetrics"]["totalMessagesExchanged"],
-                extracted_intelligence=extracted_intelligence,
-                agent_notes=agent_notes
-            )
+            if background_tasks is not None:
+                background_tasks.add_task(
+                    send_final_result_to_guvi,
+                    session_id=session_id,
+                    scam_detected=True,
+                    total_messages=final_response["engagementMetrics"]["totalMessagesExchanged"],
+                    extracted_intelligence=extracted_intelligence,
+                    agent_notes=agent_notes
+                )
+            else:
+                send_final_result_to_guvi(
+                    session_id=session_id,
+                    scam_detected=True,
+                    total_messages=final_response["engagementMetrics"]["totalMessagesExchanged"],
+                    extracted_intelligence=extracted_intelligence,
+                    agent_notes=agent_notes
+                )
             # Mark session as finalized
             mark_session_finalized(session_id)
             return final_response

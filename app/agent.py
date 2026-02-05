@@ -46,6 +46,7 @@
 # app/agent.py
 
 from app.gemini_client import get_model
+from app.gemini_client import generate_content
 
 
 AGENT_PERSONA = """
@@ -73,7 +74,7 @@ def generate_agent_reply(history):
     Generate a human-like reply from the agent using Gemini
     """
 
-    model = get_model()
+    #model = get_model()
 
     conversation = ""
     for msg in history:
@@ -89,7 +90,8 @@ Reply as the user.
 """
 
     try:
-        response = model.generate_content(prompt)
+        #response = model.generate_content(prompt)
+        response = generate_content(prompt)
         return response.text.strip()
     except Exception as e:
         print("Gemini error:", e)

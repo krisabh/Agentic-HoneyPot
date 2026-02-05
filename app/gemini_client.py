@@ -4,7 +4,7 @@ import os
 
 import google.generativeai as genai
 
-
+_MODEL = None
 def get_model():
     """
     Returns a configured Gemini GenerativeModel
