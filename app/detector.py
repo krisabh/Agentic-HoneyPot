@@ -43,70 +43,22 @@ import re
 from textwrap import dedent
 #from app.gemini_client import get_model
 from app.gemini_client import generate_content
+from app.scam_bundle import generate_scam_bundle
 
 def detect_scam(text: str):
     """
     Detect whether a message is a scam using Gemini
     """
 
-    #model = get_model()
-
-    prompt = dedent(
-        f"""
-        You are a scam detection classifier. Be conservative: only mark true when the
-        message has explicit scam indicators. Examples include urgency or threats,
-        credential/OTP requests, payment instructions (UPI IDs or account details),
-        phishing links/URLs, impersonation of banks/government/brands, or fake rewards.
-        If the message is normal or you are unsure, return false.
-
-        Message:
-        {text}
-
-  Respond ONLY in JSON:
-        {{
-          "scamDetected": true or false,
-          "confidence": 0.0-1.0,
-          "reason": "short explanation"
-        }}
-        """
-    ).strip()
-
-    try:
-        #response = model.generate_content(prompt)
-        response = generate_content(prompt)
-    except Exception:
+    bundled = generate_scam_bundle([{"sender": "scammer", "text": text}])
+    if bundled is None:
         return {
             "scamDetected": False,
-             "reason": "Model request failed"
+
+            "reason": "Model request failed",
         }
 
-    text_resp = getattr(response, "text", "") or ""
-    json_match = re.search(r"\{.*\}", text_resp, re.DOTALL)
-    if not json_match:
-        return {
-            "scamDetected": False,
-            "reason": "Unable to parse model response",
-        }
-
-    try:
-        parsed = json.loads(json_match.group(0))
-    except json.JSONDecodeError:
-        return {
-            "scamDetected": False,
-            "reason": "Unable to parse model response",
-        }
-
-    scam_detected = bool(parsed.get("scamDetected", False))
-    confidence = parsed.get("confidence", 0.0)
-    try:
-        confidence = float(confidence)
-    except (TypeError, ValueError):
-        confidence = 0.0
-
-    if scam_detected and confidence < 0.6:
-        scam_detected = False
-    reason = parsed.get("reason", "No reason provided")
     return {
-        "scamDetected": scam_detected,
-        "reason": reason,
+        "scamDetected": bundled["scamDetected"],
+        "reason": bundled["reason"],
     }

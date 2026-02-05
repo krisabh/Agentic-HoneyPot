@@ -40,9 +40,8 @@ def generate_scam_bundle(history: list) -> dict | None:
         {{
           "scamDetected": true or false,
           "confidence": 0.0-1.0,
-          "reason": "short explanation",
-          "agentReply": "single reply as the user (empty if scamDetected is false)",
-          "agentNotes": "single sentence summary (empty if scamDetected is false)"
+          "reason": "short explanation"
+          
         }}
         """
     ).strip()
