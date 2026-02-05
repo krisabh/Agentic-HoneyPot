@@ -50,7 +50,7 @@ from app.gemini_client import generate_content
 
 
 AGENT_PERSONA = """
-You are an Indian bank customer.
+You are an Indian  bank customer.
 You are worried but polite.
 You are cooperative and slightly confused.
 You never accuse the sender.
